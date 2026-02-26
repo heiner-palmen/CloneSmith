@@ -1,0 +1,4 @@
+
+keyboard
+evdev; sys_platform != 'win32'
+requests

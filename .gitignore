@@ -1,0 +1,49 @@
+# Python virtual environments
+venv/
+env/
+.venv/
+*/venv/
+*/.venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# Pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+
+# Pipenv
+Pipfile.lock
+
+# IDEs
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# System files
+.DS_Store
+
+# Local config + state
+windows/guitar_client_config.json
+windows/last_selected_song.txt
+
+# Local timemeasure config (contains secrets)
+anyOs/timemeasure_config.json
+linux/run_timemeasure.sh
+linux/timemeasure_config.json
