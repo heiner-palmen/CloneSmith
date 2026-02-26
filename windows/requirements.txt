@@ -1,0 +1,5 @@
+# Requirements for `guitar_client.py` (Windows)
+# Note: `tkinter`, `json`, `os`, `time`, `threading`, and `socket` are part of the Python standard library.
+# The only external dependency required by the imports in `guitar_client.py` is `keyboard`.
+
+keyboard
