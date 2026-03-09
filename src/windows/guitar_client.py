@@ -33,6 +33,11 @@ time_measure_hook = None
 tm_start_time = None
 tm_elapsed_ms = 0
 
+# Debounce key handlers because F1/F2 are bound both globally (keyboard) and in Tk.
+last_f1_trigger_time = 0.0
+last_f2_trigger_time = 0.0
+KEY_DEBOUNCE_SECONDS = 0.35
+
 
 def send_drum_start_trigger():
     send_to_drum("Trigger")
@@ -124,13 +129,26 @@ def clear_output():
 
 
 def on_key_press_F1(event):
+    global last_f1_trigger_time
+    now = time.time()
+    if now - last_f1_trigger_time < KEY_DEBOUNCE_SECONDS:
+        return
+    last_f1_trigger_time = now
+
     # Apply stored per-song offset plus the static communication offset when triggering playback
-    milliseconds = offset_var.get() + static_offset
-    update_output(f"Applying static offset: {static_offset} ms")
+    song_offset = int(offset_var.get())
+    milliseconds = song_offset + static_offset
+    update_output(f"Applying offsets: song {song_offset} ms + static {static_offset} ms = {milliseconds} ms")
     play_songs(milliseconds)
 
 
 def on_key_press_F2(event):
+    global last_f2_trigger_time
+    now = time.time()
+    if now - last_f2_trigger_time < KEY_DEBOUNCE_SECONDS:
+        return
+    last_f2_trigger_time = now
+
     update_output(f"Trigger pause drums")
     milliseconds = offset_var.get()
     send_drum_pause_trigger()
@@ -454,7 +472,8 @@ def open_edit_song_dialog():
         "Press 'Guitar too early' to increase the stored offset by 250 ms.\n"
         "(This starts drums earlier relative to guitar — use when guitars are too early.)\n\n"
         "Press 'Drums too early' to decrease the stored offset by 250 ms.\n"
-        "(This starts drums later relative to guitar — use when drums are too early.)"
+        "(This starts drums later relative to guitar — use when drums are too early.)\n\n"
+        f"Note: Start timing uses stored song offset + static offset ({static_offset} ms)."
     )
     tk.Label(dlg, text=expl, justify='left', wraplength=400).grid(row=2, column=0, columnspan=3, padx=6, pady=6)
 
