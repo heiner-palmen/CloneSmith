@@ -40,10 +40,8 @@ Pipfile.lock
 .DS_Store
 
 # Local config + state
-windows/guitar_client_config.json
-windows/last_selected_song.txt
+src/windows/guitar_client_config.json
+src/windows/last_selected_song.txt
 
 # Local timemeasure config (contains secrets)
-anyOs/timemeasure_config.json
-linux/run_timemeasure.sh
-linux/timemeasure_config.json
+src/anyOs/timemeasure_config.json

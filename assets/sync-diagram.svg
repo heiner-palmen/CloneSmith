@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 320" width="1200" height="320">
+  <style>
+    .bg { fill: #ffffff }
+    .line { stroke: #2c3e50; stroke-width: 4; stroke-linecap: round }
+    .label { font-family: Arial, Helvetica, sans-serif; fill: #2c3e50; font-size: 18px }
+    .note { fill: #c0392b; stroke: #2c3e50; stroke-width: 2 }
+    .note.g { fill: #f39c12 }
+    .playhead { fill: rgba(44,62,80,0.12); stroke: #2c3e50; stroke-width:1 }
+    .arrow { stroke: #34495e; stroke-width: 3; fill: none; marker-end: url(#arrowhead) }
+    .caption { font-family: Arial, Helvetica, sans-serif; font-size: 14px; fill: #444 }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="1200" height="320" />
+
+  <!-- markers -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e" />
+    </marker>
+  </defs>
+
+  <!-- timeline labels -->
+  <text x="24" y="90" class="label">Drums</text>
+  <text x="24" y="210" class="label">Guitar</text>
+
+  <!-- timeline lines -->
+  <line x1="120" y1="80" x2="1120" y2="80" class="line" />
+  <line x1="120" y1="200" x2="1120" y2="200" class="line" />
+
+  <!-- static first-note markers (positions represent measured ms translated to X) -->
+  <!-- Guitar first-note (G) -->
+  <circle cx="360" cy="200" r="12" class="note g" />
+  <text x="360" y="230" class="caption" text-anchor="middle">G (guitar first note)</text>
+
+  <!-- Drum first-note (D) -->
+  <circle cx="520" cy="80" r="12" class="note" />
+  <text x="520" y="110" class="caption" text-anchor="middle">D (drum first note)</text>
+
+  <!-- delta arrow between first-note x positions -->
+  <line x1="360" y1="170" x2="520" y2="170" class="arrow" />
+  <text x="440" y="160" class="caption" text-anchor="middle">δ = D − G</text>
+
+  <!-- static communication offset C (visual delay from drum->guitar) shown as small offset bar -->
+  <rect x="540" y="152" width="40" height="8" fill="#95a5a6" rx="3" />
+  <text x="560" y="146" class="caption" text-anchor="middle">C</text>
+
+  <!-- animated playhead moving left→right to illustrate time moving -->
+  <rect id="playhead" class="playhead" x="0" y="40" width="8" height="240" rx="2" />
+  <animate xlink:href="#playhead" attributeName="x" from="-8" to="1192" dur="6s" repeatCount="indefinite" />
+
+  <!-- labels and caption -->
+  <text x="120" y="20" class="label">Visual Sync Diagram — timelines show when each player's "first note" occurs.</text>
+  <text x="120" y="300" class="caption">Playhead moves left→right; observe G vs D positions and their difference δ (plus communication offset C).</text>
+
+</svg>
