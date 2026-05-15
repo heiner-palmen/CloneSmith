@@ -269,7 +269,7 @@ def mainscreen_to_search(searchtext):
     time.sleep(0.3)
     send_key('l')
     time.sleep(0.3)
-    for _ in range(7):
+    for _ in range(1):
         send_key('down')
         time.sleep(0.3)
     send_key('a')
