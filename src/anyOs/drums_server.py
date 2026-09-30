@@ -35,15 +35,32 @@ logger = logging.getLogger(__name__)
 # Q to stop and send elapsed time via Telegram). This runs only when evdev is
 # available for reading input devices.
 
-# Config path (look in ../linux/timemeasure_config.json)
-CONFIG_FILE = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'linux', 'timemeasure_config.json'))
+# Config path: timemeasure_config.json next to this script (template:
+# example_timemeasure_config.json; git-ignored, it holds the Telegram token).
+# ../linux/ is the folder's old name, still read as a fallback.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+CONFIG_CANDIDATES = [
+    os.path.join(_HERE, 'timemeasure_config.json'),
+    os.path.normpath(os.path.join(_HERE, '..', 'linux', 'timemeasure_config.json')),
+]
+CONFIG_FILE = CONFIG_CANDIDATES[0]
 # TOKEN/CHAT_ID are loaded from the config file only
 TOKEN = None
 CHAT_ID = None
 
 
 def load_timemeasure_config():
-    global TOKEN, CHAT_ID
+    global TOKEN, CHAT_ID, CONFIG_FILE
+    for candidate in CONFIG_CANDIDATES:
+        if os.path.isfile(candidate):
+            CONFIG_FILE = candidate
+            break
+    else:
+        # used to fail silently: the stopwatch then never reached Telegram
+        logger.warning('No timemeasure config found (%s); elapsed times are not sent to Telegram. '
+                       'Copy example_timemeasure_config.json to %s',
+                       ' or '.join(CONFIG_CANDIDATES), CONFIG_CANDIDATES[0])
+        return
     try:
         with open(CONFIG_FILE, 'r') as fh:
             cfg = json.load(fh)
@@ -51,10 +68,9 @@ def load_timemeasure_config():
             TOKEN = cfg.get('token') or cfg.get('TOKEN')
         if not CHAT_ID:
             CHAT_ID = cfg.get('chat_id') or cfg.get('CHAT_ID')
-    except FileNotFoundError:
-        return
+        logger.info('Timemeasure config loaded from %s', CONFIG_FILE)
     except Exception as e:
-        logger.warning('Failed to load timemeasure config: %s', e)
+        logger.warning('Failed to load timemeasure config %s: %s', CONFIG_FILE, e)
 
 
 load_timemeasure_config()
