@@ -4,4 +4,4 @@ evdev; sys_platform != 'win32'
 requests
 # screen-checked song search in Clone Hero (Linux only: it reads the game
 # window through X11); pinned to a release
-chkit @ git+https://github.com/heiner-palmen/chkit.git@v0.2.0 ; sys_platform == 'linux'
+chkit @ git+https://github.com/heiner-palmen/chkit.git@v0.2.1 ; sys_platform == 'linux'
