@@ -141,6 +141,10 @@ Then launch the guitar client:
 
 Need to reset? Press **F2** to cancel the current song and return the drum machine to the trigger-ready state.
 
+### Finding the Song on the Drum Machine
+
+**Search** in the Guitar Client sends the artist of the selected song to the drum server, which puts Clone Hero's song list on that artist's first song. It uses the song search of [chkit](https://github.com/heiner-palmen/chkit) (Linux): every key is sent only after the game window shows it is in the right place. Nothing is typed blindly, so the guitarist never sends keys into a song that is being played. When the search cannot go on (a song is running, the game window cannot be read, a step did not show up), it stops and the Guitar Client shows why, e.g. `Drum server: FAILED: a song is running`.
+
 
 ## 🗂️ Project Structure
 
@@ -151,7 +155,7 @@ src/
 │   ├── run_drums_server.sh/.ps1   # Launch scripts
 │   ├── setup_venv.sh/.ps1         # Virtual environment setup
 │   ├── setup_input_udev.sh        # udev rules for evdev input access (Linux)
-│   ├── requirements.txt           # keyboard, evdev, requests
+│   ├── requirements.txt           # keyboard, evdev, requests, chkit (song search)
 │   └── example_timemeasure_config.json  # Telegram bot config template
 │
 ├── windows/                       # Guitar client — runs on Windows
@@ -181,7 +185,7 @@ To play with someone outside your local network:
 
 | Component | Technology |
 |---|---|
-| Drum Server | Python 3, `socket`, `evdev` (Linux) / `keyboard` (Windows) |
+| Drum Server | Python 3, `socket`, `evdev` (Linux) / `keyboard` (Windows), [chkit](https://github.com/heiner-palmen/chkit) (song search) |
 | Guitar Client | Python 3, `tkinter`, `keyboard`, `socket` |
 | Time Measurement | `evdev` raw input or global keyboard hooks |
 | Telegram notifications | `requests` → Telegram Bot API |

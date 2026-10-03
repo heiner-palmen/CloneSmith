@@ -264,35 +264,45 @@ def send_text(text, char_delay=0.1):
         keyboard.write(text)
 
 
-def navigate_from_anywhere_in_menus_to_mainscreen():
-    # esc 5xs a 5xs
-    # Press Esc once, wait 2s, press S five times, press A once, press S five times
-    send_key('esc')
-    time.sleep(0.3)
-    for _ in range(5):
-        send_key('s')
-        time.sleep(0.3)
-    send_key('a')
-    time.sleep(0.3)
-    for _ in range(5):
-        send_key('s')
-        time.sleep(0.3)
+def load_song_search():
+    """chkit's song search (https://github.com/heiner-palmen/chkit): it reads
+    the Clone Hero window and sends each key only where the screen shows it
+    means what it should. Found installed (requirements.txt), via CHKIT_PATH,
+    or as the chkit submodule next to CloneSmith in the failfloozie superrepo.
+    None if it is not there or cannot run here (it needs Linux/X11 and evdev)."""
+    candidates = [os.environ.get('CHKIT_PATH'),
+                  os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'chkit'))]
+    for folder in [None] + candidates:
+        if folder:
+            if not os.path.isfile(os.path.join(folder, 'chkit', '__init__.py')):
+                continue
+            sys.path.insert(0, folder)
+        try:
+            from chkit.game import search
+            return search
+        except ImportError as exc:
+            if folder:
+                logger.warning('chkit found at %s but not usable: %s', folder, exc)
+    return None
 
 
-def mainscreen_to_search(searchtext):
-    # a l 7xdown a "searchtext" enter
-    send_key('a')
-    time.sleep(0.3)
-    send_key('l')
-    time.sleep(0.3)
-    for _ in range(1):
-        send_key('down')
-        time.sleep(0.3)
-    send_key('a')
-    time.sleep(0.3)
-    send_text(searchtext)
-    time.sleep(0.3)
-    send_key('enter')
+def search_artist(artist):
+    """Search request from the guitar client: the cursor of the song list on
+    the first song of `artist`. Nothing is typed blindly: when the game window
+    cannot be read, a song is running or a step does not show up on the
+    screen, the search stops and the guitarist gets the reason.
+    Returns the answer for the client: "OK" or "FAILED: <reason>"."""
+    artist = (artist or '').strip()
+    if not artist:
+        return 'FAILED: nothing to search for'
+    search = load_song_search()
+    if search is None:
+        return 'FAILED: chkit is missing (pip install git+https://github.com/heiner-palmen/chkit.git)'
+    try:
+        failed = search.find_artist(artist, log=logger.info)
+    except Exception as exc:              # e.g. no access to /dev/uinput
+        failed = f'{type(exc).__name__}: {exc}'
+    return 'OK' if failed is None else f'FAILED: {failed}'
 
 
 def in_song_to_mainscreen():
@@ -336,12 +346,12 @@ def handle_client(client_socket):
 
 
     elif cmd == "Search":
+        # screen-checked, never blind (the guitarist keeps control); the answer
+        # says whether it went through or why not
         print("Performing Search")
-        searchtext = payload or ""
-        navigate_from_anywhere_in_menus_to_mainscreen()
-        time.sleep(3)
-        mainscreen_to_search(searchtext)
-        client_socket.send(b"OK")
+        reply = search_artist(payload)
+        print(f"Search: {reply}")
+        client_socket.send(reply.encode('utf-8'))
     else:
         print("Unknown action:", action)
         client_socket.send(b"UNKNOWN")

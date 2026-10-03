@@ -48,28 +48,48 @@ def send_drum_pause_trigger():
 
 
 def send_search_to_drum(search_text):
-    """Send a Search command to the drum server with the given payload text."""
+    """Send a Search command to the drum server. The search there takes a few
+    seconds and may stop (a song is running, the game window cannot be read);
+    its answer is shown when it comes, without blocking the window."""
     payload = f"Search {search_text}"
-    send_to_drum(payload)
+
+    def show(message):
+        root.after(0, lambda: update_output(message))
+
+    def work():
+        reply = send_to_drum(payload, reply_timeout=45, out=show)
+        if reply:
+            show(f"Drum server: {reply}")
+
+    threading.Thread(target=work, daemon=True).start()
 
 
-def send_to_drum(message, timeout=5):
+def send_to_drum(message, timeout=5, reply_timeout=None, out=None):
     """Send a raw message to the configured drum server using create_connection.
 
     This handles DNS resolution, IPv4/IPv6 selection, and reports clear errors.
+    With reply_timeout the server's answer is awaited and returned. `out`
+    shows the messages (update_output unless called from another thread).
     """
+    out = out or update_output
     if not drum_server:
-        update_output("Drum server not configured (empty 'server' in guitar_client_config.json).")
-        return
+        out("Drum server not configured (empty 'server' in guitar_client_config.json).")
+        return None
     try:
         # create_connection handles getaddrinfo and tries all returned addresses
         with socket.create_connection((drum_server, 12345), timeout=timeout) as client:
             client.send(message.encode('utf-8'))
-        update_output(f"Sent to drum server: {message}")
+            out(f"Sent to drum server: {message}")
+            if reply_timeout:
+                client.settimeout(reply_timeout)
+                return client.recv(1024).decode('utf-8', errors='replace').strip()
+    except socket.timeout:
+        out(f"No answer from the drum server ({drum_server}) in time")
     except OSError as ose:
-        update_output(f"Network error sending to drum server ({drum_server}): {ose}")
+        out(f"Network error sending to drum server ({drum_server}): {ose}")
     except Exception as e:
-        update_output(f"Failed to send to drum server ({drum_server}): {e}")
+        out(f"Failed to send to drum server ({drum_server}): {e}")
+    return None
 
 
 def _time_key_event(event):
